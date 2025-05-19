@@ -1,1 +1,926 @@
-ceshi
+# template_flutter
+
+A new Flutter project.
+
+## Getting Started
+
+This project is a starting point for a Flutter application.
+
+A few resources to get you started if this is your first Flutter project:
+
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
+##构建应用
+```dart
+·]>>  git clone https://github.com/toly1994328/FlutterUnit.git
+·]>>  cd FlutterUnit
+
+Build Android:
+·]>>  flutter build apk --target-platform --split-per-abi
+Build iOS:
+·]>>  flutter build ios
+Build Windows:
+·]>>  flutter build windows  
+Build Linux:
+·]>>  flutter build linux
+Build web:
+·]>>  flutter build web
+```
+## 目录
+
+- [项目结构](#项目结构)
+- [核心组件](#核心组件)
+- [如何开始](#如何开始)
+- [添加新模块](#添加新模块)
+- [添加新服务](#添加新服务)
+- [状态管理](#状态管理)
+- [主题定制](#主题定制)
+- [API调用](#api调用)
+- [路由导航](#路由导航)
+- [常见问题](#常见问题)
+
+## 项目结构
+
+```
+lib/
+├── application.dart        # 应用程序结构与生命周期管理
+├── main.dart               # 应用入口点
+├── config.dart             # 全局配置
+├── theme.dart              # 主题定义
+├── common/                 # 通用组件
+│   ├── constants/          # 常量定义
+│   │   └── app_constants.dart  # 应用常量
+│   └── models/             # 数据模型
+│       ├── serializable.dart   # 序列化接口
+│       ├── member_model.dart   # 用户模型
+│       └── token_model.dart    # 令牌模型
+│   ├── widgets/          # 可复用UI组件
+│   │   └── custom_tabs.dart  # 自定义标签组件
+├── core/                   # 核心功能
+│   ├── api/                # API相关
+│   │   ├── api_service.dart    # API服务
+│   │   ├── base/           # 基础API类
+│   │   └── modules/        # API模块
+│   ├── di/                 # 依赖注入
+│   │   └── service_locator.dart  # 服务定位器
+│   ├── events/             # 事件管理
+│   │   └── event_bus.dart  # 事件总线
+│   ├── navigation/         # 导航管理
+│   │   └── app_navigator.dart   # 应用导航器
+│   ├── pages/              # 核心页面
+│   ├── store/              # 状态管理
+│   │   ├── app_store.dart      # 应用状态管理
+│   │   └── modules/            # 状态模块
+│   └── utils/              # 工具类 
+│       ├── core.dart       # 核心工具
+│       ├── logger.dart     # 日志工具
+        └── tools.dart      # 通用工具
+└── modules/                # 功能模块
+    ├── module_a/           # 模块A
+│   │   ├── api                 # 模块API服务
+│   │   ├── di                  # 模块依赖注入
+│   │   ├── models                 # 定义数据模型 
+│   │   ├── screens                # 模块页面 
+│   │   ├── store                  # 模块的store
+│   │   ├── widgets                # 模块组件
+│   │   ├── model_a.dart           # 模块的入口文件
+    ├── module_b/           # 模块B
+    └── webview/            # 网页模块
+```
+
+## 核心组件
+
+### 文件夹和文件的作用
+
+#### 根目录文件
+
+- **application.dart**: 管理应用程序生命周期、结构和全局访问点，包括路由注册、事件总线和应用初始化流程。
+- **main.dart**: 应用程序入口点，初始化依赖服务并启动应用。
+- **config.dart**: 全局配置管理，包括环境设置、API服务器地址和超时配置。
+- **theme.dart**: 应用的主题定义，包括颜色、字体和组件样式。
+
+#### common/ 目录
+
+通用组件和模型，可在整个应用中重用。
+
+- **constants/**: 存放应用常量，避免硬编码
+  - **app_constants.dart**: 定义尺寸、路由名称、存储键等应用常量
+
+- **models/**: 数据模型定义
+  - **serializable.dart**: 为模型提供JSON序列化能力的基础接口
+  - **member_model.dart**: 用户信息模型
+  - **token_model.dart**: 身份验证令牌模型
+
+#### core/ 目录
+
+应用核心功能实现。
+
+- **api/**: API通信相关
+  - **api_service.dart**: HTTP请求封装，支持GET、POST等方法，处理认证和错误
+  - **base/api_base.dart**: API模块的基类 
+  - **modules/**: 具体API服务实现，如用户API、通用API
+  - **modules/login.dart**: 登录、令牌管理和用户认证相关功能
+
+ 
+
+- **di/**: 依赖注入管理
+  - **service_locator.dart**: 使用GetIt实现的服务定位器，管理所有服务实例
+
+- **events/**: 事件管理系统
+  - **event_bus.dart**: 事件总线实现，用于组件间通信
+
+- **navigation/**: 导航管理
+  - **app_navigator.dart**: 路由注册和导航辅助方法
+
+- **pages/**: 核心页面组件
+  - 包含主页面、登录页等核心UI页面
+
+- **store/**: 状态管理
+  - **app_store.dart**: 全局状态管理器，类似Vuex
+  - **modules/**: 状态管理模块，如auth_store、theme_store
+
+- **utils/**: 工具类集合 
+  - **core.dart**: 核心工具方法和扩展
+  - **logger.dart**: 日志工具
+
+#### modules/ 目录
+
+功能模块，每个模块包含自己的页面、服务和模型。
+
+- **module_a/**: 模块A的实现
+- **module_b/**: 模块B的实现
+- **webview/**: 网页浏览模块实现
+
+## 如何开始
+
+### 初始化项目
+
+1. 克隆项目
+2. 安装依赖:
+```bash
+flutter pub get
+```
+3. 运行应用:
+```bash
+flutter run
+```
+
+## 添加新模块
+
+要添加新模块（如ModuleC），请按照以下步骤操作：
+
+### 1. 创建模块目录结构
+
+```
+lib/modules/module_c/
+├── model_c.dart            # 模块功能接口定义
+├── models/                 # 模块数据模型
+├── screens/                # 模块UI页面
+│   └── main_screen.dart
+├── services/               # 模块服务
+│   └── module_c_service.dart
+└── store/                  # 模块状态管理
+    └── module_c_store.dart
+```
+
+### 2. 实现模块接口
+
+```dart
+// lib/modules/module_c/model_c.dart
+import 'services/module_c_service.dart';
+
+abstract class ModuleCFeature {
+  Future<void> initialize();
+  // 模块特定功能
+}
+
+class ModuleC implements ModuleCFeature {
+  final ModuleCService _service;
+  
+  ModuleC(this._service);
+  
+  @override
+  Future<void> initialize() async {
+    // 初始化模块
+  }
+  
+  // 实现模块特定功能
+  
+  // 模块路由定义
+  static Map<String, WidgetBuilder> routes() {
+    return {
+      '/module_c': (context) => const MainScreenC(),
+      // 模块内其他路由...
+    };
+  }
+}
+```
+
+### 3. 创建模块服务
+
+```dart
+// lib/modules/module_c/services/module_c_service.dart
+import 'package:template_flutter/core/api/api_service.dart';
+
+class ModuleCService {
+  final ApiService _apiService;
+  
+  ModuleCService(this._apiService);
+  
+  // 实现模块特定的API调用
+  Future<Map<String, dynamic>> fetchSomeData() async {
+    final result = await _apiService.get('module_c/data');
+    if (result.isSuccess && result.data != null) {
+      return result.data as Map<String, dynamic>;
+    }
+    throw Exception(result.message ?? '获取数据失败');
+  }
+}
+```
+
+### 4. 创建模块状态管理
+
+```dart
+// lib/modules/module_c/store/module_c_store.dart
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class ModuleCStore extends ChangeNotifier {
+  final SharedPreferences _prefs;
+  
+  // 模块状态
+  bool _isFeatureEnabled = false;
+  List<dynamic> _items = [];
+  
+  // 构造函数
+  ModuleCStore(this._prefs);
+  
+  // Getters
+  bool get isFeatureEnabled => _isFeatureEnabled;
+  List<dynamic> get items => _items;
+  
+  // Setters
+  void setFeatureEnabled(bool value) {
+    _isFeatureEnabled = value;
+    _saveSettings();
+    notifyListeners();
+  }
+  
+  void setItems(List<dynamic> items) {
+    _items = items;
+    _saveItems();
+    notifyListeners();
+  }
+  
+  // 持久化
+  Future<void> _saveSettings() async {
+    await _prefs.setBool('module_c_feature_enabled', _isFeatureEnabled);
+  }
+  
+  Future<void> _saveItems() async {
+    // 保存列表
+  }
+  
+  // 从持久化存储恢复状态
+  Future<void> restore() async {
+    try {
+      final enabled = _prefs.getBool('module_c_feature_enabled');
+      if (enabled != null) {
+        _isFeatureEnabled = enabled;
+      }
+      
+      // 恢复其他状态...
+    } catch (e) {
+      debugPrint('恢复模块C状态失败: $e');
+    }
+  }
+}
+```
+
+### 5. 创建模块UI
+
+```dart
+// lib/modules/module_c/screens/main_screen.dart
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../store/module_c_store.dart';
+
+class MainScreenC extends StatelessWidget {
+  const MainScreenC({Key? key}) : super(key: key);
+  
+  @override
+  Widget build(BuildContext context) {
+    // 使用Provider访问模块状态
+    return Consumer<ModuleCStore>(
+      builder: (context, store, child) {
+        return Scaffold(
+          appBar: AppBar(title: const Text('模块C')),
+          body: Column(
+            children: [
+              SwitchListTile(
+                title: const Text('功能开关'),
+                value: store.isFeatureEnabled,
+                onChanged: (value) => store.setFeatureEnabled(value),
+              ),
+              
+              Expanded(
+                child: ListView.builder(
+                  itemCount: store.items.length,
+                  itemBuilder: (context, index) {
+                    final item = store.items[index];
+                    return ListTile(
+                      title: Text(item['title'] ?? ''),
+                      subtitle: Text(item['description'] ?? ''),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+```
+
+### 6. 注册模块
+
+#### 在service_locator.dart中注册服务
+
+```dart
+// lib/core/di/service_locator.dart
+
+// 导入模块
+import 'package:template_flutter/modules/module_c/model_c.dart';
+import 'package:template_flutter/modules/module_c/services/module_c_service.dart';
+import 'package:template_flutter/modules/module_c/store/module_c_store.dart';
+
+Future<void> initServiceLocator() async {
+  // 已有代码...
+  
+  // 注册模块C服务
+  sl.registerSingleton<ModuleCService>(ModuleCService(sl<ApiService>()));
+  
+  // 注册模块C
+  sl.registerFactory<ModuleCFeature>(() => ModuleC(sl<ModuleCService>()));
+  
+  // 注册模块C状态管理
+  sl.registerSingleton<ModuleCStore>(ModuleCStore(sl<SharedPreferences>()));
+}
+```
+
+#### 在app_store.dart中添加模块状态
+
+```dart
+// lib/core/store/app_store.dart
+
+// 导入模块状态
+import '../../modules/module_c/store/module_c_store.dart';
+
+class AppStore {
+  // 已有代码...
+  
+  // 添加模块C状态
+  late ModuleCStore moduleCStore;
+  
+  Future<void> init() async {
+    // 已有代码...
+    
+    // 初始化模块C状态
+    moduleCStore = sl<ModuleCStore>();
+    
+    // 从持久化存储恢复状态
+    await Future.wait([
+      // 已有恢复...
+      moduleCStore.restore(),
+    ]);
+  }
+  
+  // 提供所有状态提供者
+  List<ChangeNotifierProvider> get providers => [
+    // 已有提供者...
+    ChangeNotifierProvider<ModuleCStore>.value(value: moduleCStore),
+  ];
+}
+```
+
+#### 在application.dart中注册路由
+
+```dart
+// lib/application.dart
+
+// 导入模块
+import 'package:template_flutter/modules/module_c/model_c.dart';
+
+void _registerModuleRoutes() {
+  // 合并核心路由和模块路由
+  routes.addAll(AppNavigator.coreRoutes());
+  routes.addAll(ModuleA.routes());
+  routes.addAll(ModuleB.routes());
+  routes.addAll(ModuleC.routes());  // 添加模块C路由
+}
+
+Future<void> _initializeModules() async {
+  // 使用依赖注入获取模块实例并初始化
+  await sl<ModuleAFeature>().initialize();
+  await sl<ModuleBFeature>().initialize();
+  await sl<ModuleCFeature>().initialize();  // 初始化模块C
+}
+```
+
+## 添加新服务
+
+如需添加新的全局服务(如分析服务)：
+
+### 1. 创建服务类
+
+```dart
+// lib/core/analytics/analytics_service.dart
+class AnalyticsService {
+  // 单例模式
+  static final AnalyticsService _instance = AnalyticsService._internal();
+  factory AnalyticsService() => _instance;
+  AnalyticsService._internal();
+  
+  // 服务状态和方法
+  bool _isInitialized = false;
+  
+  Future<void> initialize() async {
+    // 初始化分析服务
+    _isInitialized = true;
+  }
+  
+  void logEvent(String eventName, [Map<String, dynamic>? parameters]) {
+    if (!_isInitialized) return;
+    
+    // 记录事件逻辑
+    print('分析事件: $eventName, 参数: $parameters');
+  }
+  
+  void logScreenView(String screenName) {
+    logEvent('screen_view', {'screen_name': screenName});
+  }
+}
+```
+
+### 2. 在service_locator中注册服务
+
+```dart
+// lib/core/di/service_locator.dart
+
+// 导入服务
+import '../analytics/analytics_service.dart';
+
+Future<void> initServiceLocator() async {
+  // 已有代码...
+  
+  // 注册分析服务
+  sl.registerSingleton<AnalyticsService>(AnalyticsService());
+}
+```
+
+### 3. 在应用中使用服务
+
+```dart
+// 示例：在页面中使用分析服务
+import 'package:flutter/material.dart';
+import '../../core/di/service_locator.dart';
+import '../../core/analytics/analytics_service.dart';
+
+class SamplePage extends StatefulWidget {
+  const SamplePage({Key? key}) : super(key: key);
+  
+  @override
+  State<SamplePage> createState() => _SamplePageState();
+}
+
+class _SamplePageState extends State<SamplePage> {
+  // 获取分析服务
+  final _analytics = sl<AnalyticsService>();
+  
+  @override
+  void initState() {
+    super.initState();
+    // 记录页面访问
+    _analytics.logScreenView('Sample Page');
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('示例页面')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            // 记录按钮点击事件
+            _analytics.logEvent('button_click', {'button': 'main_button'});
+          },
+          child: const Text('点击我'),
+        ),
+      ),
+    );
+  }
+}
+```
+
+## 状态管理
+
+本项目使用Provider结合ChangeNotifier进行状态管理。以下是如何使用状态管理的示例：
+
+### 在Store中定义状态和方法
+
+```dart
+// 示例：用户状态管理
+// lib/core/store/modules/auth_store.dart
+
+void setUserInfo(MemberModel? userInfo) {
+  _userInfo = userInfo;
+  _saveUserInfo();
+  notifyListeners();  // 通知所有监听器状态已更改
+}
+```
+
+### 在页面中使用状态
+
+```dart
+// 读取状态方式1：Consumer
+Consumer<AuthStore>(
+  builder: (context, authStore, child) {
+    return Text(
+      authStore.isLoggedIn ? '已登录' : '未登录',
+      style: TextStyle(
+        color: authStore.isLoggedIn ? Colors.green : Colors.red,
+      ),
+    );
+  },
+)
+
+// 读取状态方式2：context.watch
+Widget build(BuildContext context) {
+  final authStore = context.watch<AuthStore>();
+  
+  return Text(
+    '欢迎，${authStore.userInfo?.nickname ?? '访客'}',
+  );
+}
+
+// 读取状态方式3：context.read（不会监听变化）
+ElevatedButton(
+  onPressed: () {
+    context.read<AuthStore>().logout();
+  },
+  child: const Text('退出登录'),
+)
+```
+
+### 添加新的状态模块
+
+1. 创建新的状态类，继承ChangeNotifier
+2. 在AppStore中注册和初始化
+3. 在providers列表中添加新状态的Provider
+
+## 主题定制
+
+本项目支持主题定制，可以修改颜色、字体和组件样式。
+
+### 修改全局主题
+
+```dart
+// lib/theme.dart
+ThemeData lightTheme = ThemeData(
+  colorScheme: ColorScheme.fromSwatch(
+    primarySwatch: Colors.green,  // 修改主色
+    brightness: Brightness.light,
+  ),
+  // 其他主题配置...
+);
+```
+
+### 创建新的主题数据
+
+```dart
+// 添加自定义主题
+ThemeData customTheme = ThemeData(
+  colorScheme: ColorScheme(
+    primary: Colors.purple,         // 主要颜色
+    primaryContainer: Colors.purple.shade300,  // 主要容器颜色
+    secondary: Colors.amber,        // 次要颜色
+    secondaryContainer: Colors.amber.shade300, // 次要容器颜色
+    surface: Colors.white,          // 表面颜色
+    background: Colors.grey.shade50, // 背景颜色
+    error: Colors.red,              // 错误颜色
+    onPrimary: Colors.white,        // 主要颜色上的文本/图标
+    onSecondary: Colors.black,      // 次要颜色上的文本/图标
+    onSurface: Colors.black,        // 表面上的文本/图标
+    onBackground: Colors.black,     // 背景上的文本/图标
+    onError: Colors.white,          // 错误颜色上的文本/图标
+    brightness: Brightness.light,   // 亮度
+  ),
+  // 自定义按钮样式
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
+  ),
+  // 其他组件样式...
+);
+```
+
+### 应用主题
+
+在`main.dart`中应用主题：
+
+```dart
+// lib/main.dart
+@override
+Widget build(BuildContext context) {
+  return MultiProvider(
+    providers: store.providers,
+    child: Consumer<ThemeStore>(
+      builder: (context, themeStore, child) {
+        return MaterialApp(
+          title: 'Flutter模块化应用',
+          theme: lightTheme,       // 亮色主题
+          darkTheme: darkTheme,    // 暗色主题
+          themeMode: themeStore.themeMode,  // 主题模式（系统、亮色、暗色）
+          navigatorKey: AppNavigator.navigatorKey,
+          routes: app.routes,
+          initialRoute: app.rootRoute,
+          // 其他配置...
+        );
+      }
+    ),
+  );
+}
+```
+
+### 在页面中访问主题
+
+```dart
+// 在Widget中使用主题
+Widget build(BuildContext context) {
+  // 获取当前主题
+  final theme = Theme.of(context);
+  
+  return Container(
+    color: theme.colorScheme.surface,
+    child: Text(
+      '主题示例',
+      style: TextStyle(
+        color: theme.colorScheme.primary,
+        fontSize: 18,
+      ),
+    ),
+  );
+}
+```
+
+### 切换主题
+
+```dart
+// 切换深色/浅色模式
+IconButton(
+  icon: Icon(themeStore.isDarkMode ? Icons.light_mode : Icons.dark_mode),
+  onPressed: () {
+    themeStore.setDarkMode(!themeStore.isDarkMode);
+  },
+)
+
+// 切换主题模式
+DropdownButton<ThemeMode>(
+  value: themeStore.themeMode,
+  onChanged: (ThemeMode? newMode) {
+    if (newMode != null) {
+      themeStore.setThemeMode(newMode);
+    }
+  },
+  items: [
+    DropdownMenuItem(value: ThemeMode.system, child: Text('跟随系统')),
+    DropdownMenuItem(value: ThemeMode.light, child: Text('浅色模式')),
+    DropdownMenuItem(value: ThemeMode.dark, child: Text('深色模式')),
+  ],
+)
+```
+
+## API调用
+
+本项目提供了灵活的API调用机制，支持GET、POST等方法，自动处理身份验证和错误管理。
+
+ 
+
+### 创建API模块
+
+```dart
+// lib/core/api/modules/custom_api.dart
+import '../base/api_base.dart';
+import '../api_service.dart'
+
+class CustomApi extends ApiBase {
+    inal ApiService apiService;
+  
+  CustomApi(this.apiService);
+  
+  @override
+  String get basePath => 'custom';
+  
+  Future<Map<String, dynamic>> getCustomData(String id) async {
+    final result = await apiService.get('$basePath/data/$id');
+    if (result.isSuccess && result.data != null) {
+      return result.data as Map<String, dynamic>;
+    }
+    throw Exception(result.message ?? '获取数据失败');
+  }
+  
+  Future<bool> updateCustomData(String id, Map<String, dynamic> data) async {
+    final result = await apiService.post('$basePath/update/$id', data);
+    return result.isSuccess;
+  }
+}
+
+// 在Api类中注册新模块
+// lib/core/api/api.dart
+class Api {
+  Api._();
+
+  // 现有API模块...
+  
+  /// 自定义API
+  static final custom = CustomApi();
+}
+```
+
+### 使用API模块
+
+```dart
+import '../core/di/service_locator.dart';
+// 在页面或服务中使用API模块
+import '../core/api/modules/custom_api.dart'
+
+class SomeClass {
+  final CustomApi _api = sl<CustomApi>();
+  Future<void> loadUserProfile() async {
+    try {
+        final profile = await _api.user.getUserInfo();
+        // 处理用户信息...
+    } catch (e) {
+        // 处理错误...
+    }
+  }
+}
+```
+
+## 路由导航
+
+本项目提供了一套完整的导航系统，支持命名路由、路由参数传递和路由事件。
+
+### 基本导航
+
+```dart
+// 普通导航
+Navigator.of(context).pushNamed('/route_name');
+
+// 使用AppNavigator导航（会触发路由事件）
+AppNavigator.navigateTo(context, '/route_name');
+
+// 带参数导航
+AppNavigator.navigateTo(
+  context, 
+  '/detail', 
+  arguments: {'id': '123', 'title': '详情页'}
+);
+
+// 替换当前路由
+AppNavigator.replaceTo(context, '/home');
+
+// 返回到指定路由
+AppNavigator.popUntil(context, '/home');
+```
+
+### 接收路由参数
+
+```dart
+// 在目标页面接收参数
+Widget build(BuildContext context) {
+  // 获取路由参数
+  final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+  final id = args?['id'] as String? ?? '';
+  final title = args?['title'] as String? ?? '详情';
+  
+  return Scaffold(
+    appBar: AppBar(title: Text(title)),
+    body: Center(child: Text('ID: $id')),
+  );
+}
+```
+
+### A监听路由事件
+
+```dart
+// 监听路由事件
+@override
+void initState() {
+  super.initState();
+  
+  // 监听路由事件
+  _subscription = app.on<RouteEvent>().listen((event) {
+    print('路由变化: ${event.routeName}');
+    // 根据路由执行特定操作...
+  });
+}
+
+@override
+void dispose() {
+  // 取消订阅
+  _subscription.cancel();
+  super.dispose();
+}
+```
+
+## 常见问题
+
+### 如何处理用户登录状态？
+
+用户登录状态通过`AuthStore`管理，可以通过以下方式访问和修改：
+
+```dart
+// 检查登录状态
+final isLoggedIn = context.read<AuthStore>().isLoggedIn;
+
+// 执行登录
+final success = await context.read<AuthStore>().login(username, password);
+
+// 执行退出登录
+await context.read<AuthStore>().logout();
+```
+
+### 如何处理多语言？
+
+多语言支持通过`AppConfigStore`的locale属性管理：
+
+```dart
+// 获取当前语言
+final locale = context.read<AppConfigStore>().locale;
+
+// 设置新语言
+context.read<AppConfigStore>().setLocale(const Locale('en', 'US'));
+```
+
+### 如何添加新的API端点？
+
+1. 找到相应的API模块（如`UserApi`）或创建新模块
+2. 添加新的API方法
+3. 在服务或页面中调用该方法
+
+---
+### 如何配置启动图和logo
+
+#### 启动图 安装  flutter_native_splash: ^2.3.2
+```dart
+flutter_native_splash: #启动图
+color: "#FFFFFF"  # 背景色
+image: assets/images/splash_logo.png  # 启动图
+color_dark: "#212121"  # 暗模式下背景色
+image_dark: assets/images/splash_logo.png  # 暗模式下启动图
+
+android_12:
+image: assets/images/splash_logo.png
+icon_background_color: "#FFFFFF"
+
+web: false
+ios: true
+android: true
+```
+#### 设置应用图标(Logo) 安装 flutter_launcher_icons: ^0.13.1
+```dart
+flutter_launcher_icons: 
+android: "launcher_icon"
+ios: true
+image_path: "assets/images/logo.png"
+min_sdk_android: 21 # Android最小SDK版本
+
+# 针对自适应图标的配置(Android 8.0+)
+adaptive_icon_background: "#FFFFFF"
+adaptive_icon_foreground: "assets/images/logo.png"
+```
+
+### 如何让在web下启动 app 进行调试
+1.启用web支持
+```dart
+flutter devices
+如果有chrome(web)的设备列表 说明web已启用
+没有 使用 
+flutter config --enable-web
+```
+2.运行flutter web  应用
+```dart
+flutter run -d chrome
+```
+此框架提供了模块化、可扩展的架构，可以根据需要添加新功能和模块。通过遵循既定的模式和约定，可以轻松维护和扩展应用程序。
